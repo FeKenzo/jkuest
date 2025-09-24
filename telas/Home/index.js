@@ -1,24 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 
 
-export default function Home({ navigation }) {
+export default function Home({ navigation, route }) {
 
-    useEffect(() => {
-        return () => { // código abaixo será processado quando esta tela for finalizada e retirada da memória.
-            // o link abaixo explica bem o conceito do return dentro do useEffect
-            // useEffect cleanup function
-            // https://blog.logrocket.com/understanding-react-useeffect-cleanup-function/
-            console.log('finalizando tela: home');
-        };
-    }, []);
+    const [texto, setTexto] = useState('texto digitado na home');
 
     return (
+
         <View style={styles.container}>
             <Text style={styles.texto}>Você está na Home</Text>
             <Text></Text><Text></Text>
-            <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Tela1')}>
+
+            <Text style={styles.textoPequeno}>Digite algo para enviar para a Tela 1</Text>
+            <TextInput
+                onChangeText={(valor) => setTexto(valor)}
+                style={styles.caixaTexto}
+                value={texto}
+            />
+
+            <Text> {texto}</Text>
+
+
+            <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Tela1', { parametroTexto: texto })}>
                 <Text style={styles.texto}>Tela 1</Text>
             </TouchableOpacity>
 
@@ -29,6 +34,12 @@ export default function Home({ navigation }) {
             <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Tela3')}>
                 <Text style={styles.texto}>Tela 3</Text>
             </TouchableOpacity>
+
+
+            <Text style={styles.texto}>
+                Este texto veio da tela 3:
+                {route.params?.parametroTextoTela3}
+            </Text>
 
             <StatusBar style="auto" />
         </View>
@@ -45,6 +56,9 @@ const styles = StyleSheet.create({
     texto: {
         fontSize: 30,
     },
+    textoPequeno: {
+        fontSize: 24,
+    },
     botao: {
         width: "90%",
         height: 70,
@@ -54,5 +68,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 10,
+    },
+    caixaTexto: {
+        width: "80%",
+        height: 50,
+        borderColor: '#0AF',
+        borderWidth: 2,
+        borderRadius: 20,
+        marginBottom: 30,
+        paddingHorizontal: 10,
+        fontSize: 24,
+
     }
 });

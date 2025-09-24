@@ -1,23 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useEffect } from 'react';
 
 export default function Tela2({ navigation }) {
-
-    useEffect(() => {
-        console.log("a tela 2 foi aberta");
-
-        return () => { // código abaixo será processado quando esta tela for finalizada e retirada da memória.
-            // o link abaixo explica bem o conceito do return dentro do useEffect
-            // useEffect cleanup function
-            // https://blog.logrocket.com/understanding-react-useeffect-cleanup-function/
-            console.log('finalizando tela: tela 2');
-        };
-    }, []);
-
-
-
-
     return (
         <View style={styles.container}>
             <Text style={styles.texto}>Você está na Tela 2!</Text>

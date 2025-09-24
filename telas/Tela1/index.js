@@ -1,27 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-
-export default function Tela1({ navigation }) {
+export default function Tela1({ route, navigation }) {
 
     useEffect(() => {
-        console.log('Entrando na tela 1');
-        return () => { // código abaixo será processado quando esta tela for finalizada e retirada da memória.
-            // o link abaixo explica bem o conceito do return dentro do useEffect
-            // useEffect cleanup function
-            // https://blog.logrocket.com/understanding-react-useeffect-cleanup-function/
-            console.log('finalizando tela: tela 1');
-        };
-    }, []);
+        console.log('exibindo a tela 1');
+
+        return () => {
+            console.log('saindo da tela');
+        }
+    }, [])
 
 
     return (
         <View style={styles.container}>
+
+            <Text style={styles.textoParametro}>
+                Este texto veio via parâmetro:
+                {route.params?.parametroTexto}
+            </Text>
+
+
             <Text style={styles.texto}>Você está na Tela 1!</Text>
             <Text></Text><Text></Text>
             <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Home')}>
                 <Text style={styles.texto}>Voltar para a Home</Text>
+            </TouchableOpacity>
+
+            <Text></Text><Text></Text>
+
+            <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Tela2')}>
+                <Text style={styles.texto}>Tela 2</Text>
             </TouchableOpacity>
 
             <StatusBar style="auto" />
@@ -47,6 +57,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    textoParametro: {
+        fontSize: 30,
+        color: '#F0F',
+        textAlign: 'center',
 
     }
 });
