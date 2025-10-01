@@ -1,50 +1,63 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, Image } from 'react-native';
 import { db } from '../../db';
 
 export default function Temas() {
   const [nome, setNome] = useState('');
   const [temas, setTemas] = useState([]);
+  const [editandoId, setEditandoId] = useState(null);
+  const [novoNome, setNovoNome] = useState('');
 
-  const carregarTemas = () => {
-    db.runAsync((tx) => {
-      tx.executeSql('SELECT * FROM temas;', [], (_, { rows }) => {
-        setTemas(rows._array);
-      });
-    });
+  const carregarTemas = async () => {
+    try {
+      const rows = await db.getAllAsync('SELECT * FROM temas;');
+      setTemas(rows);
+    } catch (err) {
+      console.error("Erro ao carregar temas:", err);
+    }
   };
 
   useEffect(() => {
     carregarTemas();
   }, []);
 
-  const adicionarTema = () => {
+  const adicionarTema = async () => {
     if (!nome.trim()) {
       Alert.alert('Erro', 'Digite um nome para o tema.');
       return;
     }
-    db.runAsync((tx) => {
-      tx.executeSql(
-        'INSERT INTO temas (nome) VALUES (?);',
-        [nome],
-        () => {
-          setNome('');
-          carregarTemas();
-        },
-        (_, error) => {
-          Alert.alert('Erro', 'Esse tema já existe.');
-          return true;
-        }
-      );
-    });
+    try {
+      await db.runAsync('INSERT INTO temas (nome) VALUES (?);', [nome])
+      setNome('');
+      carregarTemas();
+    } catch (err) {
+      Alert.alert('Erro', 'Esse tema já existe.');
+    }
   };
 
-  const removerTema = (id) => {
-    db.runAsync((tx) => {
-      tx.executeSql('DELETE FROM temas WHERE id = ?;', [id], () => {
-        carregarTemas();
-      });
-    });
+  const removerTema = async (id) => {
+    try {
+      await db.runAsync('DELETE FROM temas WHERE id = ?;', [id]);
+      carregarTemas();
+    } catch (err) {
+      console.error("Erro ao remover tema:", err);
+    }
+  };
+
+  const editarTema = async (id, nomeEditado) => {
+    try {
+      if (!nomeEditado.trim()) {
+        Alert.alert('Erro', 'O nome do tema não pode ser vazio.');
+        return;
+      }
+      await db.runAsync('UPDATE temas SET nome = ? WHERE id = ?;', [nomeEditado, id]);
+      setEditandoId(null);
+      setNovoNome('');
+      carregarTemas();
+    } catch (err) {
+      console.error("Erro ao editar tema:", err);
+      Alert.alert('Erro', 'Não foi possível editar o tema.');
+    }
   };
 
   return (
@@ -67,10 +80,40 @@ export default function Temas() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.itemTexto}>{item.nome}</Text>
-            <TouchableOpacity onPress={() => removerTema(item.id)}>
-              <Text style={styles.remover}>Excluir</Text>
-            </TouchableOpacity>
+            {editandoId === item.id ? (
+              <TextInput
+                style={styles.input}
+                value={novoNome}
+                onChangeText={setNovoNome}
+                placeholder="Novo nome"
+              />
+            ) : (
+              <Text style={styles.itemTexto}>{item.nome}</Text>
+            )}
+
+            <View style={styles.acoes}>
+              {editandoId === item.id ? (
+                <TouchableOpacity
+                  style={styles.botaoSalvar}
+                  onPress={() => editarTema(item.id, novoNome)}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Salvar</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditandoId(item.id);
+                    setNovoNome(item.nome);
+                  }}
+                >
+                  <Image source={require('../../assets/editar.png')} style={styles.icone} />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity onPress={() => removerTema(item.id)}>
+                <Text style={styles.remover}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -85,7 +128,21 @@ const styles = StyleSheet.create({
   input: { flex: 1, borderWidth: 1, padding: 10, marginRight: 10, borderRadius: 5 },
   botao: { backgroundColor: '#4caf50', padding: 10, borderRadius: 5 },
   textoBotao: { color: '#fff', fontWeight: 'bold' },
-  item: { flexDirection: 'row', justifyContent: 'space-between', padding: 10, borderBottomWidth: 1 },
-  itemTexto: { fontSize: 18 },
-  remover: { color: 'red', fontWeight: 'bold' },
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  itemTexto: { fontSize: 18, flex: 1 },
+  remover: { color: 'red', fontWeight: 'bold', marginLeft: 10 },
+  icone: { width: 24, height: 24, marginHorizontal: 10 },
+  acoes: { flexDirection: 'row', alignItems: 'center' },
+  botaoSalvar: {
+    backgroundColor: '#2196f3',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
 });

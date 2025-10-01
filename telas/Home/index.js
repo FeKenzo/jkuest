@@ -22,7 +22,7 @@ export default function Home({ navigation }) {
         <Text style={styles.textoBotao}>Gerenciar Perguntas</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Jogar')}>
+      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('EscolherTema')}>
         <Text style={styles.textoBotao}>Jogar Quiz</Text>
       </TouchableOpacity>
 

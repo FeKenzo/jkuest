@@ -2,10 +2,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { initDB } from './db';
-import Home from './telas/Home';
-import Perguntas from './telas/Perguntas';
-import Temas from './telas/Temas';
-import Jogar from './telas/Jogar';
+
+import Home from './telas/Home/index';
+import Temas from './telas/Temas/index';
+import Perguntas from './telas/Perguntas/index';
+import Jogar from './telas/Jogar/index';
+import EscolherTema from './telas/Jogar/escolherTema';
 
 /* Help:
 https://reactnavigation.org/docs/hello-react-navigation
@@ -29,11 +31,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={Home} options={{ headerBackVisible: false, headerShown: false }} />
-        <Stack.Screen name="Perguntas" component={Perguntas} options={{ headerBackVisible: false }} />
-        <Stack.Screen name="Temas" component={Temas} options={{ headerBackVisible: true , animation: 'slide_from_bottom'}} />
-        <Stack.Screen name="Jogar" component={Jogar} options={{ headerBackVisible: false, headerBackTitleVisible: false, title: 'Esta é tela 3', animation: 'fade' }} />
-
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Temas" component={Temas} />
+        <Stack.Screen name="Perguntas" component={Perguntas} />
+        <Stack.Screen name="Jogar" component={Jogar} />
+        <Stack.Screen name="EscolherTema" component={EscolherTema} />
       </Stack.Navigator>
     </NavigationContainer>
   );
