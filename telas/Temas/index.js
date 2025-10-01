@@ -111,7 +111,7 @@ export default function Temas() {
               )}
 
               <TouchableOpacity onPress={() => removerTema(item.id)}>
-                <Text style={styles.remover}>Excluir</Text>
+                <Image source={require('../../assets/trash.png')} style={styles.icone} />
               </TouchableOpacity>
             </View>
           </View>

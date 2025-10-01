@@ -21,15 +21,6 @@ export const initDB = async () => {
             alt4 TEXT NOT NULL,
             correta INTEGER NOT NULL,
             FOREIGN KEY (tema_id) REFERENCES temas (id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS resultados (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tema_id INTEGER NOT NULL,
-            total INTEGER NOT NULL,
-            corretas INTEGER NOT NULL,
-            created_at TEXT NOT NULL DEFAULT (datetime('now')),
-            FOREIGN KEY (tema_id) REFERENCES temas (id)
         );`
     );
         console.log("Tabelas criadas com sucesso!");

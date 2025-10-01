@@ -1,18 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { useEffect } from 'react';
 
 export default function Home({ navigation }) {
   useEffect(() => {
-    return () => {
-      console.log('Finalizando tela: Home');
-    };
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Sistema de Quiz</Text>
       <Text style={styles.subtitulo}>Escolha uma opção abaixo</Text>
+
+      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('EscolherTema')}>
+        <Text style={styles.textoBotao}>Jogar Quiz</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Temas')}>
         <Text style={styles.textoBotao}>Gerenciar Temas</Text>
@@ -20,10 +20,6 @@ export default function Home({ navigation }) {
 
       <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Perguntas')}>
         <Text style={styles.textoBotao}>Gerenciar Perguntas</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('EscolherTema')}>
-        <Text style={styles.textoBotao}>Jogar Quiz</Text>
       </TouchableOpacity>
 
       <StatusBar style="auto" />
@@ -64,4 +60,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  logo: {
+    width: 200,    // largura da imagem
+    height: 200,   // altura da imagem
+    resizeMode: 'contain',
+    marginBottom: 10,
+  }
 });

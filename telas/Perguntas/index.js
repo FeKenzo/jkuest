@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { db } from '../../db';
+import { Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
 export default function Perguntas() {
   const [temas, setTemas] = useState([]);
@@ -21,9 +22,13 @@ export default function Perguntas() {
     }
   };
 
-  const carregarPerguntas = async () => {
+  const carregarPerguntas = async (tema) => {
     try {
-      const rows = await db.getAllAsync('SELECT * FROM perguntas;');
+      if (!tema) {
+        setPerguntas([]); // Se não houver tema selecionado, limpa a lista
+        return;
+      }
+      const rows = await db.getAllAsync('SELECT * FROM perguntas WHERE tema_id = ?;', [tema]);
       setPerguntas(rows);
     } catch (err) {
       console.error("Erro ao carregar perguntas:", err);
@@ -32,7 +37,6 @@ export default function Perguntas() {
 
   useEffect(() => {
     carregarTemas();
-    carregarPerguntas();
   }, []);
 
   const adicionarOuEditarPergunta = async () => {
@@ -59,12 +63,8 @@ export default function Perguntas() {
         Alert.alert('Sucesso', 'Pergunta adicionada!');
       }
 
-      // Limpa formulário
-      setEnunciado('');
-      setAlts(['', '', '', '']);
-      setCorreta(1);
-
-      carregarPerguntas();
+      limparFormulario();
+      carregarPerguntas(temaId);
     } catch (err) {
       console.error("Erro ao salvar pergunta:", err);
       Alert.alert('Erro', 'Não foi possível salvar a pergunta.');
@@ -82,7 +82,7 @@ export default function Perguntas() {
   const removerPergunta = async (id) => {
     try {
       await db.runAsync('DELETE FROM perguntas WHERE id = ?;', [id]);
-      carregarPerguntas();
+      carregarPerguntas(temaId);
       Alert.alert('Sucesso', 'Pergunta excluída!');
     } catch (err) {
       console.error("Erro ao excluir pergunta:", err);
@@ -90,76 +90,92 @@ export default function Perguntas() {
     }
   };
 
+  const limparFormulario = () => {
+    setEnunciado('');
+    setAlts(['', '', '', '']);
+    setCorreta(1);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Gerenciar Perguntas</Text>
+    <FlatList
+      style={styles.container}
+      data={perguntas}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={{ paddingBottom: Platform.OS === 'android' ? 50 : 40 }}
+      ListHeaderComponent={
+        <>
+          <Text style={styles.titulo}>Gerenciar Perguntas</Text>
 
-      <Text>Tema:</Text>
-      <Picker selectedValue={temaId} onValueChange={(val) => setTemaId(val)} style={styles.picker}>
-        <Picker.Item label="Selecione um tema" value={null} />
-        {temas.map((t) => (
-          <Picker.Item key={t.id} label={t.nome} value={t.id} />
-        ))}
-      </Picker>
+          <Text>Tema:</Text>
+          <Picker
+            selectedValue={temaId}
+            onValueChange={(val) => {
+              setTemaId(val);
+              carregarPerguntas(val);
+            }}
+            style={styles.picker}
+          >
+            <Picker.Item label="Selecione um tema" value={null} />
+            {temas.map((t) => (
+              <Picker.Item key={t.id} label={t.nome} value={t.id} />
+            ))}
+          </Picker>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enunciado da pergunta"
-        value={enunciado}
-        onChangeText={setEnunciado}
-      />
+          <TextInput
+            style={styles.input}
+            placeholder="Enunciado da pergunta"
+            value={enunciado}
+            onChangeText={setEnunciado}
+          />
 
-      {alts.map((alt, i) => (
-        <TextInput
-          key={i}
-          style={styles.input}
-          placeholder={`Alternativa ${i + 1}`}
-          value={alt}
-          onChangeText={(val) => {
-            const novas = [...alts];
-            novas[i] = val;
-            setAlts(novas);
-          }}
-        />
-      ))}
+          {alts.map((alt, i) => (
+            <TextInput
+              key={i}
+              style={styles.input}
+              placeholder={`Alternativa ${i + 1}`}
+              value={alt}
+              onChangeText={(val) => {
+                const novas = [...alts];
+                novas[i] = val;
+                setAlts(novas);
+              }}
+            />
+          ))}
 
-      <Text>Alternativa correta:</Text>
-      <Picker selectedValue={correta} onValueChange={(val) => setCorreta(val)} style={styles.picker}>
-        <Picker.Item label="1" value={1} />
-        <Picker.Item label="2" value={2} />
-        <Picker.Item label="3" value={3} />
-        <Picker.Item label="4" value={4} />
-      </Picker>
+          <Text>Alternativa correta:</Text>
+          <Picker selectedValue={correta} onValueChange={(val) => setCorreta(val)} style={styles.picker}>
+            <Picker.Item label="1" value={1} />
+            <Picker.Item label="2" value={2} />
+            <Picker.Item label="3" value={3} />
+            <Picker.Item label="4" value={4} />
+          </Picker>
 
-      <TouchableOpacity style={styles.botao} onPress={adicionarOuEditarPergunta}>
-        <Text style={styles.textoBotao}>
-          {editandoId ? "Salvar Alterações" : "Adicionar Pergunta"}
-        </Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={perguntas}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.itemTexto}>{item.enunciado}</Text>
-            <View style={{ flexDirection: "row" }}>
-              <TouchableOpacity onPress={() => editarPergunta(item)}>
-                <Text style={styles.editar}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => removerPergunta(item.id)}>
-                <Text style={styles.remover}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
+          <TouchableOpacity style={styles.botao} onPress={adicionarOuEditarPergunta}>
+            <Text style={styles.textoBotao}>
+              {editandoId ? "Salvar Alterações" : "Adicionar Pergunta"}
+            </Text>
+          </TouchableOpacity>
+        </>
+      }
+      renderItem={({ item }) => (
+        <View style={styles.item}>
+          <Text style={styles.itemTexto}>{item.enunciado}</Text>
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity onPress={() => editarPergunta(item)}>
+              <Image source={require('../../assets/editar.png')} style={styles.icone} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => removerPergunta(item.id)}>
+              <Image source={require('../../assets/trash.png')} style={styles.icone} />
+            </TouchableOpacity>
           </View>
-        )}
-      />
-    </View>
+        </View>
+      )}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#fff' },
   titulo: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
   input: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 },
   botao: { backgroundColor: '#4caf50', padding: 10, borderRadius: 5, marginBottom: 20 },
@@ -169,4 +185,5 @@ const styles = StyleSheet.create({
   itemTexto: { fontSize: 16, flex: 1 },
   editar: { color: 'blue', marginRight: 15 },
   remover: { color: 'red' },
+  icone: { width: 24, height: 24, marginHorizontal: 10 }
 });
